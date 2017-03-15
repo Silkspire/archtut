@@ -18,11 +18,8 @@ genfstab -U /mnt > /mnt/etc/fstab
 
 #here is where you would install a bootloader, but fuck that
 #UEFI is magical
-#pass intel_iommu=on for passthrough
-#pass intel microcode
-#probably wanna chroot and install intel-ucode package before, I dunno.
-
-efibootmgr -d /dev/sdX -p 1 -c -L "Arch Linux" -l /vmlinuz-linux -u "root=/dev/sdX2 rw initrd=/intel-ucode.img initrd=initramfs-linux.img intel_iommu=on"
+#Also pass intel_iommu=on for passthrough
+efibootmgr -d /dev/sdX -p 1 -c -L "Arch Linux" -l /vmlinuz-linux -u "root=/dev/sdX2 rw initrd=initramfs-linux.img intel_iommu=on"
 #remove bootable media, restart.
 reboot
 
@@ -46,10 +43,7 @@ ip link
 ###systemctl start dhcpcd@{NETINTERFACENAME}.service (enp#s#)
 
 #generate new locales & set one system wide
-uncomment en_US.UTF-8 in /etc/locale.gen
 locale-gen
-#write LANG=en_US.UTF-8 to /etc/locale.conf
-#write KEYMAP=de-latin1 to /etc/vconsole.conf
 localectl set-locale LANG=en_US.UTF-8
 #selectt timezone and set it permanent
 tzselect
@@ -105,74 +99,4 @@ LXQt      lxqt
   pacman -S lightdm-gtk-greeter
   systemctl enable lightdm.service
 
-#install guake before booting into broken gnome-terminal
-#afterwards go to Tweaks -> Startup Applications and add it there
-#chroot first, I guess
-pacman -S guake
-
 reboot
-
-
-
-
-#add to hosts: 127.0.0.1	YourHostname.localdomain	YourHostname
-nano /etc/hosts
-
-#use NetworkManager for internet connection
-pacman -S NetworkManager
-systemctl enable NetworkManager.service
-systemctl start NetworkManager.service
-
-
-
-#install Chromium or whatever
-pacman -S chromium
-#chrome://flags look for smooth scrolling, disable it.
-#get ublock origin
-
-#install zsh, switch shell for user
-pacman -S zsh
-chsh -s /bin/zsh USER
-
-#install mpv, transmission, sublime
-pacman -S mpv transmission-gtk
-
-# git gud
-git clone https://github.com/Silkspire/archtut Where/You/Want/To/Put/It
-git add .
-git commit -m "Comments"
-git push
-
-#mount additional drives, shit is weird, octal permissions are backwards for some fuckign reason
-#make sure you have ntfs-3g installed ffs
-#edit /etc/fstab, insert:
-/dev/sdc1 /home/silk/Data ntfs-3g defaults,auto,gid=1000,uid=1000,umask=000 0 0
-
-#setup sublime
-#download sublime from website, unarchive, move to /usr/bin, make symbolic link for term access
-tar -j -x -f the_archive_name.bzip2
-rm the_archive_name.bzip2
-sudo mv sublime_text /usr/bin/
-sudo ln -s /usr/bin/sublime_text/sublime_text /usr/local/bin/sublime
-#now to add to 'open with' list
-nano ~/.local/share/applications/sublime.desktop
-		[Desktop Entry]
-		Name=sublime3
-		GenericName=Sublime3 - IDE
-		Comment=Edit text files
-		Exec=/usr/local/bin/sublime %U
-		Terminal=false
-		Type=Application
-		StartupNotify=true
-		MimeType=text/plain;
-		Icon=/usr/bin/sublime_text_3/Icon/256x256/sublime_text.png
-		Categories=GNOME;GTK;Utility;TextEditor;
-		X-GNOME-DocPath=gedit/gedit.xml
-		X-GNOME-FullName=Sublime3
-		X-GNOME-Bugzilla-Bugzilla=GNOME
-		X-GNOME-Bugzilla-Product=gedit
-		X-GNOME-Bugzilla-Component=general
-		X-GNOME-Bugzilla-Version=3.2.0
-		X-GNOME-Bugzilla-ExtraInfoScript=/usr/share/gedit/gedit-bugreport
-		X-Ubuntu-Gettext-Domain=gedit
-
