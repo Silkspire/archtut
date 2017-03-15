@@ -1,0 +1,25 @@
+#add to hosts: 127.0.0.1	YourHostname.localdomain	YourHostname
+nano /etc/hosts
+
+#use NetworkManager for internet connection
+pacman -S NetworkManager
+systemctl enable NetworkManager.service
+systemctl start NetworkManager.service
+
+#install guake before booting into broken gnome-terminal
+#afterwards go to Tweaks -> Startup Applications and add it there
+pacman -S guake
+
+#install Chromium or whatever
+pacman -S chromium
+#chrome://flags look for smooth scrolling, disable it.
+#get ublock origin
+
+#install zsh, switch shell for user
+pacman -S zsh
+chsh -s /bin/zsh USER
+
+#install mpv, transmission, sublime
+pacman -S mpv transmission-gtk
+
+
