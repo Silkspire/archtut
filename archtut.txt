@@ -71,14 +71,21 @@ nano /etc/pacman.conf
   Color
   [multilib]
   Include = /etc/pacman.d/mirrorlist
+ #also add archlinuxfr repo FOR AUR USE I GUESS
+ [archlinuxfr]
+ SigLevel = Never
+ Server = http://repo.archlinux.fr/$arch
 
 #sync repos and reboot
 #start internet for this
+
 #systemctl start dhcpcd@{NETINTERFACENAME}.service (enp#s#)
 pacman -Sy
 reboot
 
 #login as normal user, sudo everything
+#install yaourt to be able to use AUR packages
+pacman -S yaourt
 #install default video driver
 pacman - S xf86-video-vesa
 #install OpenGL support
@@ -176,3 +183,85 @@ nano ~/.local/share/applications/sublime.desktop
 		X-GNOME-Bugzilla-ExtraInfoScript=/usr/share/gedit/gedit-bugreport
 		X-Ubuntu-Gettext-Domain=gedit
 
+#install mpd and cantata
+systemctl enable mpd.socket
+systemctl start mpd.socket
+nano /etc/mpd.conf 
+#write music_directory "~/Data/Music"
+#run Cantata, standard user config
+
+#download mpv
+
+
+
+
+
+### passthrough here
+#run this in bash to check IDs of what you want to passthrough (1002:6798 and 1002:aaa0 for me)
+shopt -s nullglob
+for d in /sys/kernel/iommu_groups/*/devices/*; do 
+    n=${d#*/iommu_groups/*}; n=${n%%/*}
+    printf 'IOMMU Group %s ' "$n"
+    lspci -nns "${d##*/}"
+done;
+
+#do this to make sure you have vfio-pci, if not, check pci-stub
+modinfo vfio-pci 
+
+#add IDs to default parameters of vfio-pci
+/etc/modprobe.d/vfio.conf
+options vfio-pci ids=1002:6798,1002:aaa0
+
+#add these to /etc/mkinitcpio.conf MAKE SURE IT'S CPIO NOT PCIO FFS
+MODULES="... vfio vfio_iommu_type1 vfio_pci vfio_virqfd ..."
+HOOKS="... modconf ..."
+
+#regenerate initramfs
+mkinitcpio -p linux
+
+#reboot, stuff might be broken anyway
+#make sure vfio-pci loaded properly
+dmesg | grep -i vfio
+[    0.329224] VFIO - User Level meta-driver version: 0.3
+[    0.341372] vfio_pci: add [10de:13c2[ffff:ffff]] class 0x000000/00000000
+[    0.354704] vfio_pci: add [10de:0fbb[ffff:ffff]] class 0x000000/00000000
+[    2.061326] vfio-pci 0000:06:00.0: enabling device (0100 -> 0103)
+
+#install qemu, libvirt, virt-manager
+pacman -S qemu, libvirt, virt-manager
+#install ovmf-git(AUR), edit nothing, continue, continue with your pass
+yaourt -S ovmf-git
+
+#edit /etc/libvirt/qemu.conf
+#leave commented out nvram there, insert this separately! CHECK HERE FOR DOMAINS MAYBE
+nvram = [
+	"/usr/share/ovmf/x64/ovmf_x64.bin:/usr/share/ovmf/x64/ovmf_vars_x64.bin"
+]
+
+#enable and start libvirtd and its logging component
+# systemctl enable --now libvirtd
+# systemctl enable virtlogd.socket
+
+#now install VM
+virt-manager
+create new virtual machine
+from iso (browse local)
+assign cpus and ram (not max RAM, shit can break)
+check "Customize configuration before install"
+leave network as host device for now, configure NAT later
+
+On customize screen, set firmware as UEFI
+Set CPU model as "host-passthrough" (write it in if you don't have it there)
+
+###CHECK THIS LATER MAYBE I DUNNO
+If you want to minimize IO overhead, go into "Add Hardware" and add a Controller for SCSI drives of the "VirtIO SCSI" model. You can then change the default IDE disk for a SCSI disk, which will bind to said controller.
+Windows VMs will not recognize those drives by default, so you need to download the ISO containing the drivers from here and add an IDE (or SATA for Windows 8.1 and newer) CD-ROM storage device linking to said ISO, otherwise you will not be able to get Windows to recognize it during the installation process. When prompted to select a disk to install windows on, load the drivers contained on the CD-ROM under vioscsi.
+###########################################
+
+#Begin installation
+#install os
+#after that's done, shut it down
+#edit hardware details, remove all unneeded devices
+spice channel, virtual display, qxl video adapter, emulated mouse and keyboard, tablet device.
+add mouse and/or keyboard to it
+add hardware -> PCI Host Devices -> your GPU
