@@ -265,3 +265,33 @@ Windows VMs will not recognize those drives by default, so you need to download 
 spice channel, virtual display, qxl video adapter, emulated mouse and keyboard, tablet device.
 add mouse and/or keyboard to it
 add hardware -> PCI Host Devices -> your GPU
+
+#to make nat, install ebtables, firewalld and dnsmasq
+systemctl start firewalld
+systemctl enable firewalld
+systemctl restart libvirtd
+
+#right-click QEMU/KVM in virt-manager > details > press + > name it something
+#Network : 192.168.1.0/24
+#192.168.1.128 - to same
+#Forwarding to physical network ANY > NAT > FINISH
+#mark as autostart if needed
+
+#install synergy on client and server
+#server is the VM
+#client is the linux
+
+On client, server ip: 192.168.1.128
+
+### FOR TO AUDIO, TRY
+### AUDIO EMULATION:
+To hear the sound from the vm on your host speakers you'll need to add this lines:
+-soundhw hda
+You might need to start qemu like this:
+QEMU_PA_SAMPLES=128 QEMU_AUDIO_DRV=pa qemu-system-x86_64...
+alsa:
+QEMU_ALSA_DAC_BUFFER_SIZE=512 QEMU_ALSA_DAC_PERIOD_SIZE=170 QEMU_AUDIO_DRV=alsa qemu-system-x86_64...
+Note: these are the settings i found that work great on my system, if you get crackling/skipping audio you might want to try different settings
+To see the available drivers and audio options:
+qemu-system-x86_64 -audio-help
+#####################################
