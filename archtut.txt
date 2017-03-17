@@ -298,7 +298,7 @@ qemu-system-x86_64 -audio-help
 
 
 
-#audio solution practically
+#audio solution practically (there might be an issue with permissions, I dunno)
 #VM configuration seems broken, need to remake vm
 cd /etc/libvirt/qemu/win10.xml
 cp win10.xml new_vm_name.xml
@@ -329,6 +329,9 @@ define new_vm_name.xml
 
 #make sure you have Speakers set as Default Audio Device in Windows
 
+#next up, to fix crackle:
+###"The application pavucontrol can be used to control the output device.
+###Be aware that on Windows guests, this can cause audio crackling without using Message-Signaled Interrupts."
 
 
 
