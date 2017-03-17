@@ -283,7 +283,7 @@ systemctl restart libvirtd
 
 On client, server ip: 192.168.1.128
 
-### FOR TO AUDIO, TRY
+### AUDIO ALTERNATIVE USING qemu-system-x86_64 or whatever the fuck
 ### AUDIO EMULATION:
 To hear the sound from the vm on your host speakers you'll need to add this lines:
 -soundhw hda
@@ -295,3 +295,81 @@ Note: these are the settings i found that work great on my system, if you get cr
 To see the available drivers and audio options:
 qemu-system-x86_64 -audio-help
 #####################################
+
+
+
+#audio solution practically
+#VM configuration seems broken, need to remake vm
+cd /etc/libvirt/qemu/win10.xml
+cp win10.xml new_vm_name.xml
+edit /etc/libvirt/qemu/new_vm_name.xml
+
+change
+<domain type='kvm'>
+to
+<domain type='kvm' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
+
+on the bottom, change
+   </devices>
+    </domain>
+to
+ </devices>
+      <qemu:commandline>
+        <qemu:env name='QEMU_AUDIO_DRV' value='pa'/>
+        <qemu:env name='QEMU_PA_SERVER' value='/run/user/1000/pulse/native'/>   (assuming your userid is 1000)
+      </qemu:commandline>
+ </domain>
+
+virsh
+define new_vm_name.xml
+# then restart libvirt and pulseaudio to make audio work
+ systemctl restart libvirtd
+ pulseaudio --kill
+ pulseaudio --start
+
+#make sure you have Speakers set as Default Audio Device in Windows
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#audio solution theoretically
+sudo EDITOR=nano virsh edit VMNAME (win10 in my case)
+###if not, edit /etc/libvirt/qemu/win10.xml
+change
+<domain type='kvm'>
+to
+<domain type='kvm' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
+
+on the bottom, change
+   </devices>
+    </domain>
+to
+ </devices>
+      <qemu:commandline>
+        <qemu:env name='QEMU_AUDIO_DRV' value='pa'/>
+        <qemu:env name='QEMU_PA_SERVER' value='/run/user/1000/pulse/native'/>   (assuming your userid is 1000)
+      </qemu:commandline>
+ </domain>
+
+ # then restart libvirt and pulseaudio to make audio work
+ systemctl restart libvirtd
+ pulseaudio --kill
+ pulseaudio --start
+
+#make sure you have Speakers set as Default Audio Device in Windows
