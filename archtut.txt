@@ -112,7 +112,7 @@ LXQt      lxqt
   pacman -S lightdm-gtk-greeter
   systemctl enable lightdm.service
 
-#install guake before booting into broken gnome-terminal
+#install terminal before booting into broken gnome-terminal
 #afterwards go to Tweaks -> Startup Applications and add it there
 #chroot first, I guess
 pacman -S guake
@@ -183,7 +183,7 @@ nano ~/.local/share/applications/sublime.desktop
 		X-GNOME-Bugzilla-ExtraInfoScript=/usr/share/gedit/gedit-bugreport
 		X-Ubuntu-Gettext-Domain=gedit
 
-#install mpd and cantata
+#install mpd and cantata for music
 systemctl enable mpd.socket
 systemctl start mpd.socket
 nano /etc/mpd.conf 
@@ -227,10 +227,12 @@ dmesg | grep -i vfio
 [    0.354704] vfio_pci: add [10de:0fbb[ffff:ffff]] class 0x000000/00000000
 [    2.061326] vfio-pci 0000:06:00.0: enabling device (0100 -> 0103)
 
-#install qemu, libvirt, virt-manager
-pacman -S qemu, libvirt, virt-manager
-#install ovmf-git(AUR), edit nothing, continue, continue with your pass
-yaourt -S ovmf-git
+#install qemu, libvirt, virt-manager AND firewalld
+pacman -S qemu libvirt virt-manager firewalld
+
+###DEPRECATED???
+##install ovmf-git(AUR), edit nothing, continue, continue with your pass
+##yaourt -S ovmf-git
 
 #edit /etc/libvirt/qemu.conf
 #leave commented out nvram there, insert this separately! CHECK HERE FOR DOMAINS MAYBE
@@ -239,10 +241,11 @@ nvram = [
 ]
 
 #enable and start libvirtd and its logging component
-# systemctl enable --now libvirtd
-# systemctl enable virtlogd.socket
+systemctl enable --now libvirtd
+systemctl enable virtlogd.socket
 
 #now install VM
+#need UEFI-compatible iso, otherwise you'll boot into a UEFI shell
 virt-manager
 create new virtual machine
 from iso (browse local)
